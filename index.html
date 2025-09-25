@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CESA | Spin the Wheel</title>
+    <title>CESA | Spin the Wheel - Elevated</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
@@ -13,7 +13,7 @@
             --light-purple: #af7ac5;
             --dark-purple: #8e44ad;
             --text-color: #ffffff;
-            --shadow-color: rgba(155, 89, 182, 0.4);
+            --shadow-color: rgba(155, 89, 182, 0.5);
             --gold-color: #f1c40f;
         }
 
@@ -25,9 +25,7 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(-45deg, #1a1a1a, #2c1a3b, #1a1a1a, #3b1a2c);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background-color: var(--background-color);
             color: var(--text-color);
             display: flex;
             flex-direction: column;
@@ -35,6 +33,20 @@
             justify-content: center;
             min-height: 100vh;
             overflow: hidden;
+            position: relative; /* Needed for particle canvas */
+        }
+        
+        /* ENHANCEMENT: Dynamic particle background */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(-45deg, #1a1a1a, #2c1a3b, #1a1a1a, #3b1a2c);
+            background-size: 400% 400%;
+            animation: gradientBG 20s ease infinite;
         }
 
         @keyframes gradientBG {
@@ -50,17 +62,25 @@
             width: 100px;
             height: auto;
             opacity: 0.8;
+            z-index: 10;
         }
 
         .container {
             text-align: center;
+            z-index: 5;
         }
         
+        /* ENHANCEMENT: Gradient text and glow for the main title */
         h1 {
-            font-size: 2.5rem;
+            font-size: 3rem;
             margin-bottom: 20px;
-            color: var(--light-purple);
-            text-shadow: 0 0 10px var(--shadow-color);
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--light-purple), var(--text-color), var(--gold-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            text-shadow: 0 0 15px var(--shadow-color), 0 0 25px rgba(241, 196, 15, 0.3);
         }
 
         .wheel-container {
@@ -70,6 +90,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
         }
 
         /* ENHANCEMENT: Refined pointer for a 3D/glossy look */
@@ -86,7 +107,6 @@
             z-index: 10;
             filter: drop-shadow(0 -4px 6px rgba(0,0,0,0.5));
         }
-        /* Adds a subtle highlight */
         .pointer::after {
             content: '';
             position: absolute;
@@ -98,14 +118,26 @@
             clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
         }
 
-
-        #wheelCanvas {
-            transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
-            max-width: 100%;
+        /* ENHANCEMENT: Added a center "pin" for realism */
+        .wheel-center {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #d0d0d0, #808080);
             border-radius: 50%;
+            border: 3px solid #555;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5), inset 0 3px 5px rgba(0,0,0,0.4);
+            z-index: 11;
         }
 
-        /* ENHANCEMENT: Gradient button for a less basic look */
+        #wheelCanvas {
+            transition: transform 5s cubic-bezier(0.1, 0.5, 0.2, 1);
+            max-width: 100%;
+            border-radius: 50%;
+            /* ENHANCEMENT: Inner shadow for a 3D effect on the wheel */
+            box-shadow: inset 0 0 25px rgba(0,0,0,0.6);
+        }
+
         #spinBtn {
             margin-top: 30px;
             padding: 15px 40px;
@@ -123,10 +155,9 @@
 
         #spinBtn:hover:not(:disabled) {
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 -2px 5px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.2);
+            box-shadow: 0 8px 25px var(--shadow-color), inset 0 -2px 5px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.2);
         }
 
-        /* ENHANCEMENT: Inset shadow for a "pressed" effect */
         #spinBtn:active:not(:disabled) {
             transform: scale(0.95) translateY(1px);
             box-shadow: inset 0 3px 7px rgba(0,0,0,0.4);
@@ -136,6 +167,7 @@
             background: #555;
             cursor: not-allowed;
             box-shadow: none;
+            transform: none;
         }
 
         /* Modal Styles */
@@ -149,24 +181,29 @@
             color: #aaa; position: absolute; top: 10px; right: 20px; font-size: 28px; font-weight: bold; cursor: pointer; transition: color 0.2s;
         }
         .close-btn:hover, .close-btn:focus { color: var(--text-color); }
-        .modal-content h2 { color: var(--text-color); }
+        .modal-content h2 { color: var(--gold-color); text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); }
         #dareText { font-size: 1.3rem; margin-top: 15px; color: var(--light-purple); font-weight: 600; line-height: 1.6; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes zoomBounceIn { 0% { transform: scale(0.5) translateY(-50px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
+    <canvas id="particleCanvas"></canvas>
+
     <header>
         <img src="logo.png" alt="CESA Logo" class="logo">
     </header>
+
     <div class="container">
         <h1>Spin the Wheel of Dares</h1>
         <div class="wheel-container">
             <div class="pointer"></div>
+            <div class="wheel-center"></div>
             <canvas id="wheelCanvas" width="500" height="500"></canvas>
         </div>
         <button id="spinBtn">SPIN!</button>
     </div>
+
     <div id="dareModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -174,6 +211,11 @@
             <p id="dareText"></p>
         </div>
     </div>
+
+    <audio id="tickSound" src="https://www.soundjay.com/clock/sounds/clock-ticking-2.mp3" preload="auto"></audio>
+    <audio id="winSound" src="https://www.soundjay.com/human/sounds/applause-2.mp3" preload="auto"></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -184,39 +226,37 @@
             const closeBtn = document.querySelector('.close-btn');
             const ctx = canvas.getContext('2d');
 
-            const segments = [
-                { color: '#8e44ad', label: 'Dare 1' }, { color: '#9b59b6', label: 'Dare 2' },
-                { color: '#8e44ad', label: 'Dare 3' }, { color: '#9b59b6', label: 'Dare 4' },
-                { color: '#8e44ad', label: 'Dare 5' }, { color: '#9b59b6', label: 'Dare 6' },
-                { color: '#8e44ad', label: 'Dare 7' }, { color: '#9b59b6', label: 'Dare 8' },
-            ];
+            // Sound elements
+            const tickSound = document.getElementById('tickSound');
+            const winSound = document.getElementById('winSound');
+            tickSound.playbackRate = 2.0; // Speed up the ticking
 
-            const dares = [ "Sing...", "Do 10 push-ups...", "Speak in an accent...", "Let someone else post...", "Do your best impression...", "Hold a plank...", "Tell a cheesy joke...", "Show the most embarrassing photo..." ];
+            const segments = [
+                { color: '#8e44ad', label: 'Sing a Song' }, { color: '#9b59b6', label: '10 Push-ups' },
+                { color: '#8e44ad', label: 'Use an Accent' }, { color: '#9b59b6', label: 'Post a Selfie' },
+                { color: '#8e44ad', label: 'Do an Impression' }, { color: '#9b59b6', label: '1 min Plank' },
+                { color: '#8e44ad', label: 'Tell a Joke' }, { color: '#9b59b6', label: 'Show Last Photo' },
+            ];
 
             const numSegments = segments.length;
             const arcSize = (2 * Math.PI) / numSegments;
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
-            const radius = canvas.width / 2 - 5; 
+            const radius = canvas.width / 2 - 10;
 
             let currentRotation = 0;
             let isSpinning = false;
 
-            // Helper function to darken a hex color
             const darkenColor = (hex, amount) => {
                 let color = hex.startsWith('#') ? hex.slice(1) : hex;
-                let r = parseInt(color.substring(0, 2), 16);
-                let g = parseInt(color.substring(2, 4), 16);
-                let b = parseInt(color.substring(4, 6), 16);
-                r = Math.max(0, r - amount);
-                g = Math.max(0, g - amount);
-                b = Math.max(0, b - amount);
+                let r = Math.max(0, parseInt(color.substring(0, 2), 16) - amount);
+                let g = Math.max(0, parseInt(color.substring(2, 4), 16) - amount);
+                let b = Math.max(0, parseInt(color.substring(4, 6), 16) - amount);
                 return `#${(r).toString(16).padStart(2, '0')}${(g).toString(16).padStart(2, '0')}${(b).toString(16).padStart(2, '0')}`;
             };
 
             const drawWheel = () => {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
                 segments.forEach((segment, i) => {
                     const angle = i * arcSize;
                     ctx.beginPath();
@@ -224,63 +264,142 @@
                     ctx.arc(centerX, centerY, radius, angle, angle + arcSize);
                     ctx.closePath();
                     
-                    // ENHANCEMENT: Use a radial gradient for depth
                     const gradient = ctx.createRadialGradient(centerX, centerY, 20, centerX, centerY, radius);
                     gradient.addColorStop(0, segment.color);
-                    gradient.addColorStop(1, darkenColor(segment.color, 30));
+                    gradient.addColorStop(1, darkenColor(segment.color, 40));
                     ctx.fillStyle = gradient;
                     ctx.fill();
                     
                     ctx.save();
                     ctx.fillStyle = 'white';
-                    ctx.font = 'bold 18px Poppins';
+                    ctx.font = 'bold 16px Poppins';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     const textAngle = angle + arcSize / 2;
                     ctx.translate(centerX, centerY);
                     ctx.rotate(textAngle);
-
-                    // ENHANCEMENT: Add a stroke to the text for better readability
+                    
                     ctx.strokeStyle = 'rgba(0,0,0,0.5)';
                     ctx.lineWidth = 4;
-                    ctx.strokeText(segment.label, radius * 0.65, 0);
-                    ctx.fillText(segment.label, radius * 0.65, 0);
-
+                    ctx.strokeText(segment.label, radius * 0.6, 0);
+                    ctx.fillText(segment.label, radius * 0.6, 0);
                     ctx.restore();
                 });
             };
 
-            const spin = () => { /* ... (spin logic is unchanged) ... */
+            const spin = () => {
                 if (isSpinning) return;
                 isSpinning = true;
                 spinBtn.disabled = true;
-                const randomSpins = Math.floor(Math.random() * 3) + 2;
+                
+                tickSound.currentTime = 0;
+                tickSound.play();
+
+                const randomSpins = Math.floor(Math.random() * 4) + 5; // More spins
                 const randomAngle = Math.random() * 360;
                 const totalRotation = randomSpins * 360 + randomAngle;
-                currentRotation += totalRotation;
-                canvas.style.transform = `rotate(${currentRotation}deg)`;
+                
+                const finalRotation = currentRotation + totalRotation;
+                currentRotation = finalRotation; // Update rotation for next spin
+                
+                canvas.style.transform = `rotate(${finalRotation}deg)`;
             };
 
-            canvas.addEventListener('transitionend', () => { /* ... (event listener is unchanged) ... */
+            canvas.addEventListener('transitionend', () => {
                 isSpinning = false;
                 spinBtn.disabled = false;
+                
+                tickSound.pause();
+                winSound.currentTime = 0;
+                winSound.play();
+
+                // Normalize rotation to be within 0-360
                 const actualRotation = currentRotation % 360;
+                const pointerAngle = 270; // Pointer is at the top (270 deg in canvas coordinates)
                 const segmentAngleDegrees = 360 / numSegments;
-                const winningIndex = Math.floor((360 - actualRotation + 90 + segmentAngleDegrees / 2) % 360 / segmentAngleDegrees);
-                showDare(winningIndex);
+                
+                // Calculate the final angle of the pointer relative to the wheel's orientation
+                const finalAngle = (360 - actualRotation + pointerAngle) % 360;
+                
+                // Determine the winning index
+                const winningIndex = Math.floor(finalAngle / segmentAngleDegrees);
+                
+                showDare(segments[winningIndex].label);
             });
 
-            const showDare = (index) => {
-                dareText.textContent = dares[index] || "No dare found!";
+            const showDare = (dare) => {
+                dareText.textContent = dare || "No dare found!";
                 modal.style.display = 'block';
+                // ENHANCEMENT: Fire confetti!
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
             };
             const hideDare = () => { modal.style.display = 'none'; };
 
             spinBtn.addEventListener('click', spin);
             closeBtn.addEventListener('click', hideDare);
             window.addEventListener('click', (event) => { if (event.target === modal) hideDare(); });
-            window.addEventListener('keydown', (event) => { if (event.key === ' ' && !isSpinning && modal.style.display !== 'block') { event.preventDefault(); spin(); }});
+            window.addEventListener('keydown', (event) => { 
+                if (event.key === ' ' && !isSpinning && modal.style.display !== 'block') {
+                    event.preventDefault();
+                    spin(); 
+                } else if (event.key === 'Escape' || (event.key === ' ' && modal.style.display === 'block')) {
+                    hideDare();
+                }
+            });
 
+            // --- ENHANCEMENT: Particle Background Logic ---
+            const particleCanvas = document.getElementById('particleCanvas');
+            const pCtx = particleCanvas.getContext('2d');
+            let particles = [];
+
+            const resizeCanvas = () => {
+                particleCanvas.width = window.innerWidth;
+                particleCanvas.height = window.innerHeight;
+            };
+
+            const createParticles = () => {
+                particles = [];
+                let numParticles = Math.floor(window.innerWidth / 20);
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push({
+                        x: Math.random() * particleCanvas.width,
+                        y: Math.random() * particleCanvas.height,
+                        vx: Math.random() * 0.4 - 0.2,
+                        vy: Math.random() * 0.4 - 0.2,
+                        radius: Math.random() * 1.5 + 0.5,
+                        opacity: Math.random() * 0.5 + 0.2
+                    });
+                }
+            };
+
+            const animateParticles = () => {
+                pCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x < 0 || p.x > particleCanvas.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > particleCanvas.height) p.vy *= -1;
+
+                    pCtx.beginPath();
+                    pCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    pCtx.fillStyle = `rgba(175, 122, 197, ${p.opacity})`;
+                    pCtx.fill();
+                });
+                requestAnimationFrame(animateParticles);
+            };
+
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                createParticles();
+            });
+            
+            resizeCanvas();
+            createParticles();
+            animateParticles();
             drawWheel(); // Initial draw
         });
     </script>
