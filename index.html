@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CESA | Spin the Wheel</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        :root {
+            --background-color: #121212;
+            --primary-purple: #9b59b6;
+            --light-purple: #af7ac5;
+            --dark-purple: #8e44ad;
+            --text-color: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 100px; /* Adjust size as needed */
+            height: auto;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 50px solid var(--primary-purple);
+            z-index: 10;
+        }
+
+        #wheelCanvas {
+            transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            max-width: 100%;
+        }
+
+        #spinBtn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+            background-color: var(--primary-purple);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);
+        }
+
+        #spinBtn:hover {
+            background-color: var(--light-purple);
+        }
+
+        #spinBtn:active {
+            transform: scale(0.95);
+        }
+
+        #spinBtn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background-color: #2c2c2c;
+            margin: 15% auto;
+            padding: 30px;
+            border: 2px solid var(--primary-purple);
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+            animation: slideIn 0.4s;
+        }
+
+        .close-btn {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: var(--text-color);
+        }
+
+        #dareText {
+            font-size: 1.2rem;
+            margin-top: 15px;
+            color: var(--light-purple);
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        @keyframes slideIn {
+            from {transform: translateY(-50px); opacity: 0;}
+            to {transform: translateY(0); opacity: 1;}
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="logo.png" alt="CESA Logo" class="logo">
+    </header>
+
+    <div class="container">
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <canvas id="wheelCanvas" width="500" height="500"></canvas>
+        </div>
+        <button id="spinBtn">SPIN!</button>
+    </div>
+
+    <div id="dareModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Your Dare Is...</h2>
+            <p id="dareText"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('wheelCanvas');
+            const spinBtn = document.getElementById('spinBtn');
+            const modal = document.getElementById('dareModal');
+            const dareText = document.getElementById('dareText');
+            const closeBtn = document.querySelector('.close-btn');
+            const ctx = canvas.getContext('2d');
+
+            // --- Configuration ---
+            // You can easily customize the segments and dares here!
+            const segments = [
+                { color: '#8e44ad', label: 'Dare 1' },
+                { color: '#9b59b6', label: 'Dare 2' },
+                { color: '#8e44ad', label: 'Dare 3' },
+                { color: '#9b59b6', label: 'Dare 4' },
+                { color: '#8e44ad', label: 'Dare 5' },
+                { color: '#9b59b6', label: 'Dare 6' },
+                { color: '#8e44ad', label: 'Dare 7' },
+                { color: '#9b59b6', label: 'Dare 8' },
+            ];
+
+            const dares = [
+                "Sing the chorus of your favorite song out loud.",
+                "Do 10 push-ups right now.",
+                "Speak in an accent for the next 5 minutes.",
+                "Let someone else post a status on your social media.",
+                "Do your best impression of a celebrity.",
+                "Hold a plank for 30 seconds.",
+                "Tell a cheesy joke to the group.",
+                "Show the most embarrassing photo on your phone."
+            ];
+            // ---------------------
+
+            const numSegments = segments.length;
+            const arcSize = (2 * Math.PI) / numSegments;
+            let currentRotation = 0;
+            let isSpinning = false;
+
+            const drawWheel = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+
+                segments.forEach((segment, i) => {
+                    const angle = i * arcSize;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.arc(0, 0, canvas.width / 2, angle, angle + arcSize);
+                    ctx.closePath();
+                    ctx.fillStyle = segment.color;
+                    ctx.fill();
+
+                    // Draw text
+                    ctx.save();
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 18px Poppins';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const textAngle = angle + arcSize / 2;
+                    ctx.rotate(textAngle);
+                    ctx.fillText(segment.label, canvas.width / 4, 0);
+                    ctx.restore();
+                });
+                ctx.restore();
+            };
+
+            const spin = () => {
+                if (isSpinning) return;
+                isSpinning = true;
+                spinBtn.disabled = true;
+
+                // Random spin destination
+                const randomSpins = Math.floor(Math.random() * 5) + 5; // 5 to 9 full rotations
+                const randomAngle = Math.random() * 360; // Random stopping point
+                const totalRotation = randomSpins * 360 + randomAngle;
+
+                currentRotation += totalRotation;
+                canvas.style.transform = `rotate(${currentRotation}deg)`;
+            };
+
+            canvas.addEventListener('transitionend', () => {
+                isSpinning = false;
+                spinBtn.disabled = false;
+
+                const actualRotation = currentRotation % 360;
+                const segmentAngleDegrees = 360 / numSegments;
+                
+                // Adjust for pointer being at the top (0 degrees is east)
+                const winningIndex = Math.floor((360 - actualRotation + segmentAngleDegrees / 2) % 360 / segmentAngleDegrees);
+                
+                showDare(winningIndex);
+            });
+
+            const showDare = (index) => {
+                dareText.textContent = dares[index];
+                modal.style.display = 'block';
+            };
+
+            const hideDare = () => {
+                modal.style.display = 'none';
+            };
+
+            spinBtn.addEventListener('click', spin);
+            closeBtn.addEventListener('click', hideDare);
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    hideDare();
+                }
+            });
+
+            drawWheel(); // Initial draw
+        });
+    </script>
+</body>
+</html>
