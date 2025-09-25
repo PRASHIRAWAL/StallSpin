@@ -74,19 +74,19 @@
 
         .pointer {
             position: absolute;
-            top: -15px; /* Adjusted position */
+            top: -15px; 
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            /* ENHANCEMENT: Made the pointer more distinct */
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
-            border-top: 50px solid var(--primary-purple);
+            /* --- THIS IS THE NEW COLOR --- */
+            border-top: 50px solid #f1c40f; 
+            /* --------------------------- */
             z-index: 10;
             filter: drop-shadow(0 -5px 5px rgba(0,0,0,0.3));
         }
-
         #wheelCanvas {
             transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
             max-width: 100%;
