@@ -100,7 +100,7 @@
 
 
         #wheelCanvas {
-            transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
             max-width: 100%;
             border-radius: 50%;
         }
@@ -157,7 +157,7 @@
 </head>
 <body>
     <header>
-        <img src="https://i.imgur.com/u160p11.png" alt="CESA Logo" class="logo">
+        <img src="logo.png" alt="CESA Logo" class="logo">
     </header>
     <div class="container">
         <h1>Spin the Wheel of Dares</h1>
@@ -254,7 +254,7 @@
                 if (isSpinning) return;
                 isSpinning = true;
                 spinBtn.disabled = true;
-                const randomSpins = Math.floor(Math.random() * 5) + 5;
+                const randomSpins = Math.floor(Math.random() * 3) + 2;
                 const randomAngle = Math.random() * 360;
                 const totalRotation = randomSpins * 360 + randomAngle;
                 currentRotation += totalRotation;
