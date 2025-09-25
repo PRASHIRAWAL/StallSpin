@@ -33,10 +33,9 @@
             justify-content: center;
             min-height: 100vh;
             overflow: hidden;
-            position: relative; /* Needed for particle canvas */
+            position: relative;
         }
         
-        /* ENHANCEMENT: Dynamic particle background */
         #particleCanvas {
             position: fixed;
             top: 0;
@@ -70,7 +69,6 @@
             z-index: 5;
         }
         
-        /* ENHANCEMENT: Gradient text and glow for the main title */
         h1 {
             font-size: 3rem;
             margin-bottom: 20px;
@@ -93,7 +91,6 @@
             filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
         }
 
-        /* ENHANCEMENT: Refined pointer for a 3D/glossy look */
         .pointer {
             position: absolute;
             top: -15px;
@@ -118,7 +115,6 @@
             clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
         }
 
-        /* ENHANCEMENT: Added a center "pin" for realism */
         .wheel-center {
             position: absolute;
             width: 50px;
@@ -134,7 +130,6 @@
             transition: transform 5s cubic-bezier(0.1, 0.5, 0.2, 1);
             max-width: 100%;
             border-radius: 50%;
-            /* ENHANCEMENT: Inner shadow for a 3D effect on the wheel */
             box-shadow: inset 0 0 25px rgba(0,0,0,0.6);
         }
 
@@ -170,7 +165,6 @@
             transform: none;
         }
 
-        /* Modal Styles */
         .modal {
             display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); animation: fadeIn 0.3s;
         }
@@ -195,7 +189,7 @@
     </header>
 
     <div class="container">
-        <h1>Spin the Wheel of Dares</h1>
+        <h1>Spin for a Surprise</h1>
         <div class="wheel-container">
             <div class="pointer"></div>
             <div class="wheel-center"></div>
@@ -226,16 +220,28 @@
             const closeBtn = document.querySelector('.close-btn');
             const ctx = canvas.getContext('2d');
 
-            // Sound elements
             const tickSound = document.getElementById('tickSound');
             const winSound = document.getElementById('winSound');
-            tickSound.playbackRate = 2.0; // Speed up the ticking
+            tickSound.playbackRate = 2.0;
 
+            // MODIFICATION: Use generic labels for the wheel segments
             const segments = [
-                { color: '#8e44ad', label: 'Sing a Song' }, { color: '#9b59b6', label: '10 Push-ups' },
-                { color: '#8e44ad', label: 'Use an Accent' }, { color: '#9b59b6', label: 'Post a Selfie' },
-                { color: '#8e44ad', label: 'Do an Impression' }, { color: '#9b59b6', label: '1 min Plank' },
-                { color: '#8e44ad', label: 'Tell a Joke' }, { color: '#9b59b6', label: 'Show Last Photo' },
+                { color: '#8e44ad', label: 'DARE 1' }, { color: '#9b59b6', label: 'DARE 2' },
+                { color: '#8e44ad', label: 'DARE 3' }, { color: '#9b59b6', label: 'DARE 4' },
+                { color: '#8e44ad', label: 'DARE 5' }, { color: '#9b59b6', label: 'DARE 6' },
+                { color: '#8e44ad', label: 'DARE 7' }, { color: '#9b59b6', label: 'DARE 8' },
+            ];
+
+            // MODIFICATION: Keep the actual dares in a separate, secret array
+            const dares = [
+                "Sing the chorus of your favorite song out loud.",
+                "Do 10 push-ups or 15 squats.",
+                "Speak in a funny accent for the next 3 minutes.",
+                "Let someone else post a silly (but appropriate) status from your social media.",
+                "Do your best impression of a famous celebrity or cartoon character.",
+                "Hold a plank for as long as you can.",
+                "Tell the cheesiest, most groan-worthy joke you know.",
+                "Show everyone the most embarrassing (but safe-for-work) photo on your phone."
             ];
 
             const numSegments = segments.length;
@@ -272,7 +278,7 @@
                     
                     ctx.save();
                     ctx.fillStyle = 'white';
-                    ctx.font = 'bold 16px Poppins';
+                    ctx.font = 'bold 22px Poppins'; // Increased font size for better visibility
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     const textAngle = angle + arcSize / 2;
@@ -281,8 +287,8 @@
                     
                     ctx.strokeStyle = 'rgba(0,0,0,0.5)';
                     ctx.lineWidth = 4;
-                    ctx.strokeText(segment.label, radius * 0.6, 0);
-                    ctx.fillText(segment.label, radius * 0.6, 0);
+                    ctx.strokeText(segment.label, radius * 0.65, 0);
+                    ctx.fillText(segment.label, radius * 0.65, 0);
                     ctx.restore();
                 });
             };
@@ -295,12 +301,12 @@
                 tickSound.currentTime = 0;
                 tickSound.play();
 
-                const randomSpins = Math.floor(Math.random() * 4) + 5; // More spins
+                const randomSpins = Math.floor(Math.random() * 4) + 5;
                 const randomAngle = Math.random() * 360;
                 const totalRotation = randomSpins * 360 + randomAngle;
                 
                 const finalRotation = currentRotation + totalRotation;
-                currentRotation = finalRotation; // Update rotation for next spin
+                currentRotation = finalRotation;
                 
                 canvas.style.transform = `rotate(${finalRotation}deg)`;
             };
@@ -313,24 +319,19 @@
                 winSound.currentTime = 0;
                 winSound.play();
 
-                // Normalize rotation to be within 0-360
                 const actualRotation = currentRotation % 360;
-                const pointerAngle = 270; // Pointer is at the top (270 deg in canvas coordinates)
+                const pointerAngle = 270;
                 const segmentAngleDegrees = 360 / numSegments;
-                
-                // Calculate the final angle of the pointer relative to the wheel's orientation
                 const finalAngle = (360 - actualRotation + pointerAngle) % 360;
-                
-                // Determine the winning index
                 const winningIndex = Math.floor(finalAngle / segmentAngleDegrees);
                 
-                showDare(segments[winningIndex].label);
+                // MODIFICATION: Show the dare from the 'dares' array using the winning index
+                showDare(dares[winningIndex]);
             });
 
             const showDare = (dare) => {
                 dareText.textContent = dare || "No dare found!";
                 modal.style.display = 'block';
-                // ENHANCEMENT: Fire confetti!
                 confetti({
                     particleCount: 150,
                     spread: 80,
@@ -351,7 +352,7 @@
                 }
             });
 
-            // --- ENHANCEMENT: Particle Background Logic ---
+            // --- Particle Background Logic ---
             const particleCanvas = document.getElementById('particleCanvas');
             const pCtx = particleCanvas.getContext('2d');
             let particles = [];
@@ -400,7 +401,7 @@
             resizeCanvas();
             createParticles();
             animateParticles();
-            drawWheel(); // Initial draw
+            drawWheel();
         });
     </script>
 </body>
