@@ -13,6 +13,7 @@
             --light-purple: #af7ac5;
             --dark-purple: #8e44ad;
             --text-color: #ffffff;
+            --shadow-color: rgba(155, 89, 182, 0.4);
         }
 
         * {
@@ -23,7 +24,10 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: var(--background-color);
+            /* ENHANCEMENT: Added an animated gradient background */
+            background: linear-gradient(-45deg, #1a1a1a, #2c1a3b, #1a1a1a, #3b1a2c);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             color: var(--text-color);
             display: flex;
             flex-direction: column;
@@ -33,16 +37,30 @@
             overflow: hidden;
         }
 
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         .logo {
             position: absolute;
             top: 20px;
             left: 20px;
-            width: 100px; /* Adjust size as needed */
+            width: 100px;
             height: auto;
+            opacity: 0.8;
         }
 
         .container {
             text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--light-purple);
+            text-shadow: 0 0 10px var(--shadow-color);
         }
 
         .wheel-container {
@@ -56,20 +74,24 @@
 
         .pointer {
             position: absolute;
-            top: -10px;
+            top: -15px; /* Adjusted position */
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 25px solid transparent;
-            border-right: 25px solid transparent;
+            /* ENHANCEMENT: Made the pointer more distinct */
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
             border-top: 50px solid var(--primary-purple);
             z-index: 10;
+            filter: drop-shadow(0 -5px 5px rgba(0,0,0,0.3));
         }
 
         #wheelCanvas {
             transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
             max-width: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 30px var(--shadow-color), inset 0 0 20px rgba(0,0,0,0.5);
         }
 
         #spinBtn {
@@ -82,16 +104,19 @@
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
-            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px var(--shadow-color);
         }
 
-        #spinBtn:hover {
+        #spinBtn:hover:not(:disabled) {
             background-color: var(--light-purple);
+            /* ENHANCEMENT: Added a glow effect on hover */
+            box-shadow: 0 8px 25px var(--shadow-color), 0 0 20px var(--light-purple);
+            transform: translateY(-3px);
         }
 
-        #spinBtn:active {
-            transform: scale(0.95);
+        #spinBtn:active:not(:disabled) {
+            transform: scale(0.95) translateY(0);
         }
 
         #spinBtn:disabled {
@@ -111,6 +136,7 @@
             height: 100%;
             overflow: auto;
             background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
             animation: fadeIn 0.3s;
         }
 
@@ -120,11 +146,13 @@
             padding: 30px;
             border: 2px solid var(--primary-purple);
             border-radius: 10px;
-            width: 80%;
+            width: 90%;
             max-width: 500px;
             text-align: center;
             position: relative;
-            animation: slideIn 0.4s;
+            /* ENHANCEMENT: New modal animation */
+            animation: zoomBounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 25px var(--shadow-color);
         }
 
         .close-btn {
@@ -135,28 +163,41 @@
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
+            transition: color 0.2s;
         }
 
         .close-btn:hover,
         .close-btn:focus {
             color: var(--text-color);
         }
+        
+        .modal-content h2 {
+            color: var(--text-color);
+        }
 
         #dareText {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             margin-top: 15px;
             color: var(--light-purple);
             font-weight: 600;
+            line-height: 1.6;
         }
 
         @keyframes fadeIn {
-            from {opacity: 0;}
-            to {opacity: 1;}
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        @keyframes slideIn {
-            from {transform: translateY(-50px); opacity: 0;}
-            to {transform: translateY(0); opacity: 1;}
+        /* ENHANCEMENT: New animation for the modal */
+        @keyframes zoomBounceIn {
+            0% {
+                transform: scale(0.5) translateY(-50px);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -166,6 +207,7 @@
     </header>
 
     <div class="container">
+        <h1>Spin the Wheel of Dares</h1>
         <div class="wheel-container">
             <div class="pointer"></div>
             <canvas id="wheelCanvas" width="500" height="500"></canvas>
@@ -191,7 +233,6 @@
             const ctx = canvas.getContext('2d');
 
             // --- Configuration ---
-            // You can easily customize the segments and dares here!
             const segments = [
                 { color: '#8e44ad', label: 'Dare 1' },
                 { color: '#9b59b6', label: 'Dare 2' },
@@ -217,23 +258,25 @@
 
             const numSegments = segments.length;
             const arcSize = (2 * Math.PI) / numSegments;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = canvas.width / 2 - 5; // leave space for border
+
             let currentRotation = 0;
             let isSpinning = false;
 
             const drawWheel = () => {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.save();
-                ctx.translate(canvas.width / 2, canvas.height / 2);
-
+                
                 segments.forEach((segment, i) => {
                     const angle = i * arcSize;
                     ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.arc(0, 0, canvas.width / 2, angle, angle + arcSize);
+                    ctx.moveTo(centerX, centerY);
+                    ctx.arc(centerX, centerY, radius, angle, angle + arcSize);
                     ctx.closePath();
                     ctx.fillStyle = segment.color;
                     ctx.fill();
-
+                    
                     // Draw text
                     ctx.save();
                     ctx.fillStyle = 'white';
@@ -241,11 +284,29 @@
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     const textAngle = angle + arcSize / 2;
+                    ctx.translate(centerX, centerY);
                     ctx.rotate(textAngle);
-                    ctx.fillText(segment.label, canvas.width / 4, 0);
+                    ctx.fillText(segment.label, radius * 0.65, 0);
                     ctx.restore();
                 });
-                ctx.restore();
+
+                // ENHANCEMENT: Add center hub and border
+                // Outer Border
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 5;
+                ctx.stroke();
+
+                // Center Hub
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
+                ctx.fillStyle = '#444';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 15, 0, 2 * Math.PI);
+                ctx.fillStyle = '#fff';
+                ctx.fill();
             };
 
             const spin = () => {
@@ -253,7 +314,6 @@
                 isSpinning = true;
                 spinBtn.disabled = true;
 
-                // Random spin destination
                 const randomSpins = Math.floor(Math.random() * 5) + 5; // 5 to 9 full rotations
                 const randomAngle = Math.random() * 360; // Random stopping point
                 const totalRotation = randomSpins * 360 + randomAngle;
@@ -269,14 +329,14 @@
                 const actualRotation = currentRotation % 360;
                 const segmentAngleDegrees = 360 / numSegments;
                 
-                // Adjust for pointer being at the top (0 degrees is east)
-                const winningIndex = Math.floor((360 - actualRotation + segmentAngleDegrees / 2) % 360 / segmentAngleDegrees);
+                // Adjust for pointer being at the top (canvas 0deg is East, CSS 0deg is North)
+                const winningIndex = Math.floor((360 - actualRotation + 90 + segmentAngleDegrees / 2) % 360 / segmentAngleDegrees);
                 
                 showDare(winningIndex);
             });
 
             const showDare = (index) => {
-                dareText.textContent = dares[index];
+                dareText.textContent = dares[index] || "No dare found!";
                 modal.style.display = 'block';
             };
 
@@ -286,9 +346,19 @@
 
             spinBtn.addEventListener('click', spin);
             closeBtn.addEventListener('click', hideDare);
+            
             window.addEventListener('click', (event) => {
                 if (event.target === modal) {
                     hideDare();
+                }
+            });
+
+            // NEW: Add spacebar functionality
+            window.addEventListener('keydown', (event) => {
+                // Check if spacebar is pressed, wheel is not spinning, and modal is not open
+                if (event.key === ' ' && !isSpinning && modal.style.display !== 'block') {
+                    event.preventDefault(); // Prevent default spacebar action (like scrolling)
+                    spin();
                 }
             });
 
